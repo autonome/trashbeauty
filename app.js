@@ -154,16 +154,16 @@ function init() {
     console.log('No ability to requestWakeLock');
   }
 
-  [ ambientLightSource, // TODO: not detecting brightened state in low light
-    bluetoothSource, // done scan enumeration, TODO: LE scanning, add/remove detection
-    cameraSource, // TODO: implement me
-    deviceMotionSource, // DONE
-    deviceOrientationSource, // DONE
-    powerSource, // TODO: test me with wifi debugging
-    proximitySource, // DONE
-    soundSource, // TODO: implement activity
+  [// ambientLightSource, // TODO: not detecting brightened state in low light
+    //bluetoothSource, // done scan enumeration, TODO: LE scanning, add/remove detection
+    cameraSource // TODO: implement me
+    //deviceMotionSource, // DONE
+    //deviceOrientationSource, // DONE
+    //powerSource, // TODO: test me with wifi debugging
+    //proximitySource, // DONE
+    //soundSource, // TODO: implement activity
     //speechSource, // TODO: implement me
-    wifiSource // Basic on/off done. TODO: Needs add/remove detection
+    //wifiSource // Basic on/off done. TODO: Needs add/remove detection
   ].forEach(function(d) {
 
     // initialize source
@@ -173,7 +173,7 @@ function init() {
     sources[d.id] = d;
 
     // display all registered sources
-    render(d);
+    //render(d);
 
     // listent for data from the source
     document.addEventListener(d.id, processEvent);
