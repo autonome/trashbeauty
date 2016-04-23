@@ -136,13 +136,7 @@
 
 */
 
-var firstRun = localStorage.firstRun || true,
-    runTests = true,
-    sources = {}, // keyed off source id
-    triggers = {}, // keyed off source id, then signal id
-    cache = {}; // keyed off source id, then signal id
-
-const MAX_LEN_SPARKBLOCK = 60;
+var firstRun = localStorage.firstRun || true;
 
 function init() {
 
@@ -154,88 +148,10 @@ function init() {
     console.log('No ability to requestWakeLock');
   }
 
-  [// ambientLightSource, // TODO: not detecting brightened state in low light
-    //bluetoothSource, // done scan enumeration, TODO: LE scanning, add/remove detection
-    cameraSource // TODO: implement me
-    //deviceMotionSource, // DONE
-    //deviceOrientationSource, // DONE
-    //powerSource, // TODO: test me with wifi debugging
-    //proximitySource, // DONE
-    //soundSource, // TODO: implement activity
-    //speechSource, // TODO: implement me
-    //wifiSource // Basic on/off done. TODO: Needs add/remove detection
-  ].forEach(function(d) {
-
-    // initialize source
-    d.start();
-
-    // cache source
-    sources[d.id] = d;
-
-    // display all registered sources
-    //render(d);
-
-    // listent for data from the source
-    document.addEventListener(d.id, processEvent);
-  });
-
-  /*
-  notifyIFTTT("Power has been lost.");
-  notifyIFTTT("Device moved significantly.");
-  notifyIFTTT("New Bluetooth device detected: \"alan's iPhone\".");
-  notifyIFTTT("It's 9am and there's been no sound for two hours.");
-  notifyIFTTT("The wi-fi internet connection has been lost.");
-  */
-
+  // initialize camera source
+  cameraSource.start();
 }
 window.addEventListener('DOMContentLoaded', init);
-
-function registerTrigger(trigger, action, notification) {
-  if (!triggers[trigger.source])
-    triggers[trigger.source] = [];
-  if (!triggers[trigger.source][trigger.signal])
-    triggers[trigger.source][trigger.signal] = [];
-
-  triggers[trigger.source][trigger.signal].push({
-    trigger: trigger, 
-    action: action,
-    notification: notification
-  });
-}
-
-function processEvent(e) {
-  var source = sources[e.type],
-      sourceId = source.id,
-      signalId = e.detail.id;
-
-  // cache source data by source id, then by signal id
-  // TODO: persistentize this?
-  // TOOD: cap this
-  if (!cache[sourceId])
-    cache[sourceId] = []
-  if (!cache[sourceId][signalId])
-    cache[sourceId][signalId] = []
-  cache[sourceId][signalId].push(e.detail.value);
-
-  //notifyIFTTT(signalId, e.detail.label, e.detail.value) {
-
-  // render the data
-  render(source, e.detail, cache[sourceId][signalId]);
-
-  // find matching triggers
-  if (triggers[sourceId] && triggers[sourceId][signalId]) {
-    var matched = triggers[sourceId][signalId];
-    console.log('matched?', matched)
-    matched.forEach(function(match) {
-      if (match.trigger.value == e.detail.value) {
-        processNotification(match.trigger, match.notification, e.detail);
-      }
-    });
-  }
-  else {
-    console.log('no trigger+signal matches')
-  }
-}
 
 function processNotification(trigger, notification, data) {
   if (!("Notification" in window)) {
@@ -250,59 +166,6 @@ function processNotification(trigger, notification, data) {
       });
     }
   });
-}
-
-// Data renderer
-function render(source, data, cachedData) {
-  // get the container for this source
-  var container = document.querySelector('#' + source.id);
-
-  // if the signal container doesn't exist yet, create it
-  if (!container) {
-    var containerTpl = document.querySelector('#template-signal')
-
-    // set the title
-    containerTpl.content.querySelector('h2').innerText = source.title;
-
-    // add to document
-    var containerClone = document.importNode(containerTpl.content, true);
-    containerTpl.parentNode.appendChild(containerClone);
-
-    // get newly added element and give it an id
-    container = containerTpl.parentNode.lastElementChild;
-    container.setAttribute('id', source.id);
-  }
-
-  if (data) {
-    var dataContainer = container.querySelector('.data'),
-        entryNode = dataContainer.querySelector('.' + data.id);
-
-    if (!entryNode) {
-      var entryTpl = document.querySelector('#template-signal-entry');
-      entryNode = document.importNode(entryTpl.content, true).firstElementChild;
-      entryNode.classList.add(data.id);
-    }
-
-    if (data.type == 'row') {
-      entryNode = entryNode.cloneNode(true);
-    }
-
-    var label = entryNode.querySelector('.label');
-    label.textContent = data.label;
-
-    var value = entryNode.querySelector('.value');
-
-    if (data.type == 'scalar' || data.type == 'row') {
-      value.textContent = data.value;
-    }
-    else if (data.type == 'stream') {
-      var start = cachedData < MAX_LEN_SPARKBLOCK ? 0 : cachedData.length - MAX_LEN_SPARKBLOCK;
-      var show = cachedData.slice(start, cachedData.length - 1);
-      value.textContent = sparkline.generate(show);
-    }
-
-    dataContainer.appendChild(entryNode);
-  }
 }
 
 function notifyIFTTT(value1, value2, value3) {

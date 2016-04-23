@@ -9,17 +9,14 @@ var cameraSource = (function(global) {
 
   function start() {
     showCameraPreview(function() {
-      // asdf
-      console.log('perview started')
     });
   }
 
 
   function showCameraPreview(cb) {
 
-      console.log('showww.');
+    console.log('showww.');
     navigator.mediaDevices.getUserMedia({ video: true }).then(function(stream) {
-    //navigator.getUserMedia({ video: true }, function(stream) {
       console.log('got ittttt.');
 
       //var track = stream.getVideoTracks()[0];
