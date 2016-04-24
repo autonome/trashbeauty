@@ -44,7 +44,7 @@ var cameraSource = (function(global) {
 
   function videoSnapshot(cb) {
     var vid = document.querySelector('#vid'),
-        width = 120,
+        width = 320,
         height = vid.videoHeight / (vid.videoWidth/width),
         canvas = document.createElement('canvas'),
         context = canvas.getContext('2d');

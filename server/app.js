@@ -22,6 +22,9 @@ app.use(bodyParser.urlencoded({
   limit: 100000000 
 }));
 
+// static misc
+app.use('/static', express.static('../static'));
+
 // camera viewer app
 app.use('/camera', express.static('../camera'));
 
