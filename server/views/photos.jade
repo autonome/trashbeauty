@@ -3,11 +3,14 @@ html
     title
     meta(charset="utf-8")
     meta(name="viewport" content="width=device-width,user-scalable=no,initial-scale=1")
-    script(src='/static/photos.js')
     link(rel='stylesheet' type='text/css' href='/static/photos.css')
+    script(src='/static/slip.js')
   body
+  div(class='container')
     each file, index in files
       div(class='image')
         a(href='/uploads/#{file}')
           img(src='/uploads/#{file}')
+
+    script(src='/static/photos.js')
       
