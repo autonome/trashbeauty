@@ -12,9 +12,7 @@ var cameraSource = (function(global) {
     });
   }
 
-
   function showCameraPreview(cb) {
-
     navigator.mediaDevices.getUserMedia({ video: true }).then(function(stream) {
 
       //var track = stream.getVideoTracks()[0];
@@ -60,7 +58,7 @@ var cameraSource = (function(global) {
       uploadPhoto(blob, function() {
         console.log('uploaded!')
       });
-      //var newImg = document.createElement("img")
+      //var newImg = document.createElement('img')
       //var url = URL.createObjectURL(blob);
     });
 
@@ -80,6 +78,25 @@ var cameraSource = (function(global) {
     else {
       container.appendChild(card);
     }
+  }
+
+  function uploadPhoto(fileBlob, callback) {
+    // Create object for form data
+    var fd = new FormData();
+    // 'upl' is the arbitrary string that multer expects to match
+    // its config on the server end.
+    fd.append('upl', fileBlob, 'file-' + Date.now() + '.jpg');
+
+    var xhr = new XMLHttpRequest();
+    xhr.open('POST', 'http://localhost:3000/upload');
+    xhr.onload = function() {
+      var data = JSON.parse(xhr.responseText).data;
+      var imgurURL = data.link;
+      callback(imgurURL)
+    }
+
+    xhr.send(fd);
+    console.log('up: sent');
   }
 
   // public
