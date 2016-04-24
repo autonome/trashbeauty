@@ -179,3 +179,23 @@ function notifyIFTTT(value1, value2, value3) {
 
   sendJSON(url, msg);
 }
+
+function uploadPhoto(fileBlob, callback) {
+  // Create object for form data
+  var fd = new FormData();
+
+  // Add file to form data
+  fd.append("image", fileBlob);
+
+  var xhr = new XMLHttpRequest();
+  xhr.open("POST", "http://localhost:3000/");
+  xhr.onload = function() {
+    var data = JSON.parse(xhr.responseText).data;
+    var imgurURL = data.link;
+    callback(imgurURL)
+  }   
+
+  xhr.send(fd);
+  console.log('up: sent');
+}
+

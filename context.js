@@ -1,6 +1,0 @@
-var Context = (function () {
-
-  return {
-  };
-
-})();
