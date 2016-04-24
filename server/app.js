@@ -2,7 +2,8 @@ var express = require('express');
 var multer = require('multer'),
     bodyParser = require('body-parser'),
     path = require('path'),
-    fs = require('fs');
+    fs = require('fs'),
+    ws = require('nodejs-websocket');
 
 var app = new express();
 app.use(bodyParser.json());
@@ -70,6 +71,9 @@ app.post('/upload', upload, function(req, res) {
 // listen for proximity events from that device
 app.post('/proximity', function(req, res) {
   console.log('proximity event!');
+  broadcast({
+    takePhoto: 'hellyes'
+  });
 });
 
 // 
@@ -87,3 +91,22 @@ app.get('/photos', function(req, res){
 
 var port = 3000;
 app.listen( port, '0.0.0.0', function(){ console.log('listening on port '+port); } );
+
+// websocket server
+var server = ws.createServer(function (conn) {
+}).listen(8001)
+
+function broadcast(msg) {
+  server.connections.forEach(function (conn) {
+    conn.send(msg)
+  })
+}
+
+/*
+// testing
+setInterval(function() {
+  broadcast(JSON.stringify({
+    takePhoto: 'hellyes'
+  }));
+}, 5000);
+*/

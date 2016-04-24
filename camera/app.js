@@ -179,3 +179,20 @@ function notifyIFTTT(value1, value2, value3) {
 
   sendJSON(url, msg);
 }
+
+var socket = new WebSocket('ws://' + window.location.hostname + ':8001');
+
+socket.onmessage = function(msg) {
+  var obj = JSON.parse(msg.data);
+  if (obj.takePhoto == 'hellyes') {
+    console.log('taking phoooootoooo');
+    cameraSource.snapshot();
+  }
+};
+
+var button = document.createElement('button')
+button.name = 'click'
+button.addEventListener('click', function() {
+  cameraSource.snapshot()
+});
+document.body.appendChild(button)

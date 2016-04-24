@@ -24,6 +24,7 @@ var cameraSource = (function(global) {
       vid.src = vidURL;
       vid.play();
 
+      /*
       setInterval(function() {
 
         console.log('intval')
@@ -31,14 +32,30 @@ var cameraSource = (function(global) {
         videoSnapshot(function(canvas) {
           //track.stop();
 
+          //addSnapshotToPage(canvas);
           
-          var img = document.createElement('img')
-          img.src = canvas.toDataURL()
-          document.body.appendChild(img)
+          // upload photo
+          canvas.toBlob(function(blob) {
+            uploadPhoto(blob, function() {
+              console.log('uploaded!')
+            });
+          });
 
         });
       }, 2000);
+      */
 
+    });
+  }
+
+  function snapshot() {
+    videoSnapshot(function(canvas) {
+      // upload photo
+      canvas.toBlob(function(blob) {
+        uploadPhoto(blob, function() {
+          //console.log('uploaded!')
+        });
+      });
     });
   }
 
@@ -54,30 +71,14 @@ var cameraSource = (function(global) {
 
     context.drawImage(vid, 0, 0, width, height);
 
-    canvas.toBlob(function(blob) {
-      uploadPhoto(blob, function() {
-        console.log('uploaded!')
-      });
-      //var newImg = document.createElement('img')
-      //var url = URL.createObjectURL(blob);
-    });
 
     cb(canvas);
   }
 
-  function addSnapshot(canvas) {
-    var card = document.createElement('div')
-    card.classList.add('imagePreview')
-    card.appendChild(canvas)
-
-    var container = document.querySelector('#container'),
-        preview = document.querySelector('#preview');
-    if (preview.nextSibling) {
-      container.insertBefore(card, preview.nextSibling);
-    }
-    else {
-      container.appendChild(card);
-    }
+  function addSnapshotToPage(canvas) {
+    var img = document.createElement('img')
+    img.src = canvas.toDataURL()
+    document.body.appendChild(img)
   }
 
   function uploadPhoto(fileBlob, callback) {
@@ -103,7 +104,8 @@ var cameraSource = (function(global) {
   return {
     id: id,
     title: title,
-    start: start
+    start: start,
+    snapshot: snapshot
   };
 
 })(this);
