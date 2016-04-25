@@ -38,7 +38,8 @@ var storage =   multer.diskStorage({
     callback(null, '../uploads');
   },
   filename: function (req, file, callback) {
-    callback(null,file.originalname);
+    //callback(null, file.originalname);
+    callback(null, 'file-' + Date.now() + '-' + file.originalname + '.jpg');
   }
 });
 //var upload = multer({ storage : storage}).single('userPhoto');
@@ -46,14 +47,15 @@ var upload = multer({ storage : storage}).single('upl');
 
 // file upload POST
 app.post('/upload', upload, function(req, res) {
-  console.log(req.body); // form fields
+  console.log('file upload!')
+  //console.log(req.body); // form fields
   /*
   example output:
 
   { title: 'abc' }
   */
 
-  console.log(req.file); //form files
+  //console.log(req.file); //form files
   /* example output:
             { fieldname: 'upl',
               originalname: 'grumpy.png',
@@ -71,17 +73,25 @@ app.post('/upload', upload, function(req, res) {
 // listen for proximity events from that device
 app.post('/proximity', function(req, res) {
   console.log('proximity event!');
+  var msg = JSON.parse(JSON.stringify(req.body));
+  console.log('event type', msg.proximity);
   broadcast({
-    takePhoto: 'hellyes'
+    photoMode: msg.proximity
   });
 });
 
-// 
+// delete
+app.post('/delete', function(req, res) {
+  console.log('delete!');
+  console.log(req.body)
+});
+
+// show photo list 
 app.get('/photos', function(req, res){
   fs.readdir('../uploads', function(err, files){
     files = files.filter(function(file) {
       return file[0] != '.';
-    });
+    }).reverse();
     //var randomfile=Math.round((Math.random() * files.length));
     //console.log(randomfile);
     //console.log (files[randomfile]);
@@ -90,15 +100,20 @@ app.get('/photos', function(req, res){
 });
 
 var port = 3000;
-app.listen( port, '0.0.0.0', function(){ console.log('listening on port '+port); } );
+app.listen(port, '0.0.0.0', function() {
+  console.log('listening on port ' + port);
+});
 
 // websocket server
-var server = ws.createServer(function (conn) {
-}).listen(8001)
+var server = ws.createServer(function(conn) {
+  console.log('new websocket connection!');
+}).listen(8001, '172.26.2.99');
 
 function broadcast(msg) {
+  console.log('broadcasting a photo request to ' + server.connections.length + ' camera(s)!')
+  var str = JSON.stringify(msg)
   server.connections.forEach(function (conn) {
-    conn.send(msg)
+    conn.send(str)
   })
 }
 
@@ -110,3 +125,8 @@ setInterval(function() {
   }));
 }, 5000);
 */
+
+process.on('uncaughtException', function (err) {
+  console.error(err.stack);
+  console.log("Node NOT Exiting...");
+});

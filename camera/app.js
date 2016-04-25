@@ -136,6 +136,8 @@
 
 */
 
+console.log('wtf')
+
 var firstRun = localStorage.firstRun || true;
 
 function init() {
@@ -180,13 +182,51 @@ function notifyIFTTT(value1, value2, value3) {
   sendJSON(url, msg);
 }
 
+console.log('init ws...');
 var socket = new WebSocket('ws://' + window.location.hostname + ':8001');
 
+console.log('inited ws!');
+
+// interval timer for party mode
+var timer = null;
+
 socket.onmessage = function(msg) {
+  console.log('ws message!!!')
   var obj = JSON.parse(msg.data);
-  if (obj.takePhoto == 'hellyes') {
-    console.log('taking phoooootoooo');
+  console.log('ws message:', obj)
+
+  // private
+  if (!obj['photoMode']) {
+    console.log('no photoMode property... wtf');
+  }
+  else if (obj.photoMode == 1) {
+    console.log('mode 1, no taking photos');
+    // turn off party mode
+    if (timer) {
+      timer.cancel();
+    }
+  }
+  // shy
+  else if (obj.photoMode == 2) {
+    console.log('mode 2, taking a photo');
+    // turn off party mode
+    if (timer) {
+      timer.cancel();
+    }
     cameraSource.snapshot();
+  }
+  // party
+  else if (obj.photoMode == 3) {
+    console.log('mode 3, taking photos every n seconds');
+    cameraSource.snapshot();
+    timer = setInterval(function() {
+      console.log('snapshot!');
+      cameraSource.snapshot();
+    }, 60000)
+  }
+  // not supported
+  else {
+    console.log('unsupported mode, ignoring:', obj.photoMode);
   }
 };
 

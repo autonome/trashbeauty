@@ -2,11 +2,33 @@ function qs(s) {
   return document.querySelector(s);
 }
 
+function deletePhoto(fileName, callback) {
+  // Create object for form data
+  var fd = new FormData();
+  // 'upl' is the arbitrary string that multer expects to match
+  // its config on the server end.
+  fd.append('filename', fileName);
+
+  var xhr = new XMLHttpRequest();
+  xhr.open('POST', 'http://' + window.location.hostname + ':3000/delete');
+  xhr.onload = function() {
+    var data = JSON.parse(xhr.responseText).data;
+    var imgurURL = data.link;
+    callback(imgurURL)
+  }
+
+  xhr.send(fd);
+  console.log('delete: sent');
+}
+
 var list = qs('div.container');
 new Slip(list);
 
 list.addEventListener('slip:swipe', function(e) {
   e.target.parentNode.removeChild(e.target);
+
+  deletePhoto(e.target.data.filename)
+
   /*
   // e.target list item swiped
   if (thatWasSwipeToRemove) {

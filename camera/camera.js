@@ -53,7 +53,7 @@ var cameraSource = (function(global) {
       // upload photo
       canvas.toBlob(function(blob) {
         uploadPhoto(blob, function() {
-          //console.log('uploaded!')
+          console.log('uploaded!')
         });
       });
     });
@@ -89,15 +89,17 @@ var cameraSource = (function(global) {
     fd.append('upl', fileBlob, 'file-' + Date.now() + '.jpg');
 
     var xhr = new XMLHttpRequest();
-    xhr.open('POST', 'http://localhost:3000/upload');
+    xhr.open('POST', 'http://' + window.location.hostname + ':3000/upload');
     xhr.onload = function() {
-      var data = JSON.parse(xhr.responseText).data;
-      var imgurURL = data.link;
-      callback(imgurURL)
+      console.log('photo uploadeddddd')
+      try {
+        var data = JSON.parse(xhr.responseText).data;
+      } catch(ex) {
+      }
     }
 
     xhr.send(fd);
-    console.log('up: sent');
+    console.log('upload: sent');
   }
 
   // public

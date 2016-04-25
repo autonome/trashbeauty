@@ -8,7 +8,7 @@ html
   body
   div(class='container')
     each file, index in files
-      div(class='image')
+      div(class='image' data-file='#{file}')
         a(href='/uploads/#{file}')
           img(src='/uploads/#{file}')
 
