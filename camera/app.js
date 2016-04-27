@@ -231,7 +231,7 @@ socket.onmessage = function(msg) {
 };
 
 var button = document.createElement('button')
-button.name = 'click'
+button.innerText = 'take snapshot'
 button.addEventListener('click', function() {
   cameraSource.snapshot()
 });

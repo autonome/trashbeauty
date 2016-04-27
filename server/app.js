@@ -6,6 +6,7 @@ var multer = require('multer'),
     ws = require('nodejs-websocket');
 
 var app = new express();
+app.disable('etag');
 app.use(bodyParser.json());
 
 // view engine setup
@@ -84,6 +85,10 @@ app.post('/proximity', function(req, res) {
 app.post('/delete', function(req, res) {
   console.log('delete!');
   console.log(req.body)
+  var msg = JSON.parse(JSON.stringify(req.body));
+  console.log('file to delete', msg.file);
+  // TODO: FUUUUUUUUUUU
+  fs.unlink('../uploads/' + msg.file)
 });
 
 // show photo list 
@@ -105,9 +110,11 @@ app.listen(port, '0.0.0.0', function() {
 });
 
 // websocket server
+// TODO: for some reason it doesn't like 0.0.0.0 for all interfaces
+// like it should, so IP is hard coded here.
 var server = ws.createServer(function(conn) {
   console.log('new websocket connection!');
-}).listen(8001, '172.26.2.99');
+}).listen(8001, '10.249.36.223');
 
 function broadcast(msg) {
   console.log('broadcasting a photo request to ' + server.connections.length + ' camera(s)!')

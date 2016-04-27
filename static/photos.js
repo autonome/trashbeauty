@@ -2,32 +2,52 @@ function qs(s) {
   return document.querySelector(s);
 }
 
+var list = qs('div.container');
+
 function deletePhoto(fileName, callback) {
-  // Create object for form data
-  var fd = new FormData();
-  // 'upl' is the arbitrary string that multer expects to match
-  // its config on the server end.
-  fd.append('filename', fileName);
+  console.log('deleting photo')
 
   var xhr = new XMLHttpRequest();
   xhr.open('POST', 'http://' + window.location.hostname + ':3000/delete');
+  xhr.setRequestHeader("Content-Type", "application/json;charset=UTF-8");
   xhr.onload = function() {
-    var data = JSON.parse(xhr.responseText).data;
-    var imgurURL = data.link;
-    callback(imgurURL)
+    console.log('done deleting')
   }
 
-  xhr.send(fd);
+  xhr.send(JSON.stringify({file:fileName}));
   console.log('delete: sent');
 }
 
-var list = qs('div.container');
+function triggerSystemSnapshot() {
+  console.log('system snapshot!')
+
+  var xhr = new XMLHttpRequest();
+  xhr.open('POST', 'http://' + window.location.hostname + ':3000/proximity');
+  xhr.setRequestHeader("Content-Type", "application/json;charset=UTF-8");
+  xhr.onload = function() {
+    console.log('done snapshotting')
+  }
+
+  xhr.send(JSON.stringify({proximity:2}));
+  console.log('snapshot: sent');
+}
+
+var button = document.createElement('button')
+button.innerText = 'take snapshot'
+button.addEventListener('click', function() {
+  triggerSystemSnapshot()
+});
+document.body.insertBefore(button, list)
+
+
 new Slip(list);
 
 list.addEventListener('slip:swipe', function(e) {
   e.target.parentNode.removeChild(e.target);
 
-  deletePhoto(e.target.data.filename)
+  console.log('deleting filename', e.target.dataset.file)
+  deletePhoto(e.target.dataset.file)
+  console.log('deleted.')
 
   /*
   // e.target list item swiped
@@ -103,4 +123,3 @@ stack.on('dragend', function (e) {
 });
 */
 
-console.log('done!')
