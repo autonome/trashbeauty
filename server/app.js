@@ -1,5 +1,9 @@
-var express = require('express');
-var multer = require('multer'),
+var externalIP = '10.0.0.235',
+    httpPort = 3000,
+    wsPort = 8001;
+
+var express = require('express'),
+    multer = require('multer'),
     bodyParser = require('body-parser'),
     path = require('path'),
     fs = require('fs'),
@@ -43,7 +47,6 @@ var storage =   multer.diskStorage({
     callback(null, 'file-' + Date.now() + '-' + file.originalname + '.jpg');
   }
 });
-//var upload = multer({ storage : storage}).single('userPhoto');
 var upload = multer({ storage : storage}).single('upl');
 
 // file upload POST
@@ -104,17 +107,63 @@ app.get('/photos', function(req, res){
   })
 });
 
-var port = 3000;
-app.listen(port, '0.0.0.0', function() {
-  console.log('listening on port ' + port);
+// listen for localhost and external addr
+app.listen(httpPort, '0.0.0.0', function() {
+  console.log('listening on port ' + httpPort);
 });
+
+
+var screens = null,
+    cameras = [];
 
 // websocket server
 // TODO: for some reason it doesn't like 0.0.0.0 for all interfaces
 // like it should, so IP is hard coded here.
 var server = ws.createServer(function(conn) {
   console.log('new websocket connection!');
-}).listen(8001, '10.249.36.223');
+
+  // register screens and cameras
+  conn.on('text', function(opts) {
+    if (!opts.register) {
+      // wtf
+    }
+    else if (opts.register == 'camera') {
+      cameras.push(conn);
+      console.log('registered a camera');
+    }
+    else if (opts.register == 'screen') {
+      screens.push(conn);
+      console.log('registered a screen');
+    }
+  });
+
+  conn.on('binary', function (inStream) {
+    console.log('binary event!'); 
+
+    // Empty buffer for collecting binary data 
+    var data = new Buffer(0)
+
+    // Read chunks of binary data and add to the buffer 
+    inStream.on('readable', function () {
+      var newData = inStream.read()
+      if (newData) {
+        data = Buffer.concat([data, newData], data.length+newData.length)
+      }
+    });
+
+    inStream.on('end', function () {
+      console.log('Received ' + data.length + ' bytes of binary data')
+      //process_my_data(data)
+      fs.writeFile('../uploads/' + data.length + '.jpg', data, function(err) {
+        if (err) {
+          return console.log(err);
+        }
+        console.log("The file was saved!");
+      }); 
+    });
+  });
+
+}).listen(wsPort, externalIP);
 
 function broadcast(msg) {
   console.log('broadcasting a photo request to ' + server.connections.length + ' camera(s)!')
@@ -137,3 +186,4 @@ process.on('uncaughtException', function (err) {
   console.error(err.stack);
   console.log("Node NOT Exiting...");
 });
+

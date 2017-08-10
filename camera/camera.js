@@ -5,28 +5,28 @@
 var cameraSource = (function(global) {
 
   var id = 'source-camera',
-      title = 'Camera';
+      title = 'Camera',
+      videoElement = null;
 
-  function start() {
-    showCameraPreview(function() {
-    });
+  function start(opts) {
+    videoElement = opts.videoElement;
+    showCameraPreview(opts.callback);
   }
 
   function showCameraPreview(cb) {
     navigator.mediaDevices.getUserMedia({ video: true }).then(function(stream) {
 
-      //var track = stream.getVideoTracks()[0];
-
       var vidURL = window.URL.createObjectURL(stream);
 
-      var vid = document.querySelector('#vid');
+      videoElement.src = vidURL;
+      videoElement.play();
 
-      vid.src = vidURL;
-      vid.play();
+      if (cb) {
+        cb();
+      }
 
       /*
       setInterval(function() {
-
         console.log('intval')
 
         videoSnapshot(function(canvas) {
@@ -48,6 +48,10 @@ var cameraSource = (function(global) {
     });
   }
 
+  // the whole deal
+  // * videoSnapshot() writes snapshot from video preview to a canvas
+  // * get the binary data from the snapshot
+  // * upload the binary data to the server
   function snapshot() {
     videoSnapshot(function(canvas) {
       // upload photo
@@ -57,6 +61,10 @@ var cameraSource = (function(global) {
         });
       });
     });
+  }
+
+  function snapshotToCanvas(cb) {
+    videoSnapshot(cb);
   }
 
   function videoSnapshot(cb) {
@@ -70,7 +78,6 @@ var cameraSource = (function(global) {
     canvas.height = height;
 
     context.drawImage(vid, 0, 0, width, height);
-
 
     cb(canvas);
   }
@@ -107,7 +114,8 @@ var cameraSource = (function(global) {
     id: id,
     title: title,
     start: start,
-    snapshot: snapshot
+    snapshot: snapshot,
+    snapshotToCanvas: snapshotToCanvas
   };
 
 })(this);
